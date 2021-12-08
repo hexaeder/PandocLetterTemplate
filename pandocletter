@@ -1,0 +1,28 @@
+#!/bin/zsh
+
+if [ $# -eq 0 ]; then
+    echo "No arguments supplied, pass filename!"
+    exit
+fi
+
+FILE=$1
+OUTPUT="${FILE:r}.pdf"
+SCRIPTPATH=$0:h
+TEMPLATE="${SCRIPTPATH}/template.tex"
+
+
+if ! [[ -f "$FILE" ]]; then
+    echo "$FILE does not exist yet, copy markdown template."
+
+    MDTEMPLATE="${SCRIPTPATH}/private.md"
+    if [[ -f "$MDTEMPLATE" ]]; then
+        echo "Using private.md markdown template."
+        cp $MDTEMPLATE $FILE
+    else
+        echo "Use generic example.md as template. You can create a private.md file in $SCRIPTPATH to reuse personal information!"
+        cp "${SCRIPTPATH}/example.md" $FILE
+    fi
+fi
+
+echo "Run pandoc command..."
+pandoc $FILE -o $OUTPUT --template=$TEMPLATE

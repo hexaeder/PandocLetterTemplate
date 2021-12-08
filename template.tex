@@ -1,0 +1,172 @@
+\documentclass[%
+  fontsize=11pt, % Schriftgröße
+  version=last,%
+  parskip=half
+]{scrlttr2}
+
+\usepackage[utf8]{inputenc}
+\usepackage[$lang$]{babel}
+\usepackage{iflang}
+\usepackage{eurosym}
+\usepackage{textcomp}
+\usepackage{csquotes}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+\usepackage{spreadtab}
+\usepackage{hhline} % For single-cell borders
+\usepackage{enumitem} % For customizing lists
+
+\LoadLetterOption{$letteroption$}
+\renewcommand*{\familydefault}{\sfdefault}
+% ============================
+
+% internationalization
+\newcommand{\taxid}{\IfLanguageName{ngerman}{Steuer ID}{Tax ID}}
+\newcommand{\bankaccount}{\IfLanguageName{ngerman}{Bankverbindung}{Bank Account}}
+\newcommand{\desc}{\IfLanguageName{ngerman}{Beschreibung}{Description}}
+\newcommand{\prices}{\IfLanguageName{ngerman}{Preise}{Prices} in $currency$}
+\newcommand{\subtotal}{\IfLanguageName{ngerman}{Zwischensumme}{Subtotal}}
+\newcommand{\total}{\IfLanguageName{ngerman}{Summe}{Total}}
+\newcommand{\VAT}{\IfLanguageName{ngerman}{MwSt}{VAT} $VAT$\%}
+
+% TABLE CUSTOMIZATION
+%--------------------------------
+% \usepackage[compact]{titlesec} % For customizing title sections
+% \usepackage{arydshln} % For the dotted line on the table
+\renewcommand{\arraystretch}{1.2} % Apply vertical padding to table cells
+\setlist{nolistsep} % No whitespace around list items
+\setlist[itemize]{leftmargin=0.5cm} % Reduce list left indent
+\setlength{\tabcolsep}{9pt} % Larger gutter between columns
+% Command required by how Pandoc handles the list conversion
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% location field will be redefined to contain all the stuff i want to show there
+\KOMAoptions{%
+  locfield=wide,          % Breite Absenderergänzung (location)
+}
+\setkomavar{firsthead}{} % no heading on first page
+\pagestyle{empty} % no page numbering
+
+\setkomavar{fromname}{$author$}
+\newkomavar{companyname}
+\setkomavar{companyname}{$company$}
+\setkomavar{fromaddress}{% % Adresse
+  $for(from)$
+  $from$$sep$\\
+  $endfor$}
+\setkomavar{fromemail}{$mail$} % Email-Adresse
+\setkomavar{fromphone}{$phone$} % Telefonnummer
+
+\setkomavar{backaddress}{%
+  \usekomavar{fromname}\\%
+  $if(company)$
+  \usekomavar{companyname}\\%
+  $endif$
+  \usekomavar{fromaddress}%
+}
+\setkomavar{backaddressseparator}{, } % or a comma
+
+% % ===== Absenderergänzung =====
+\setkomavar{location}{%
+  \raggedright\footnotesize{%
+    \usekomavar{fromname}\\
+    $if(company)$
+    \usekomavar{companyname}\\
+    $endif$
+    \usekomavar{fromaddress}\\
+    \vspace{.5\baselineskip}
+    $if(mail)$
+    \faEnvelope[regular]~~\texttt{\usekomavar{fromemail}}\\
+    $endif$
+    $if(phone)$
+    \faPhone*~~\texttt{\usekomavar{fromphone}}\\
+    $endif$
+    \vspace{.5\baselineskip}
+    $if(service)$ $if(taxid)$
+    \taxid: \texttt{$taxid$}\\
+    \vspace{.5\baselineskip}
+    $endif$ $endif$
+    $if(service)$ $if(IBAN)$
+    \bankaccount:\\
+    \texttt{$IBAN$}\\
+    $Bank$
+    $endif$ $endif$
+  }
+}
+% ============================
+
+% ====== Geschäftszeichenzeile =========
+\setkomavar{yourref}{}          % Ihr Zeichen
+\setkomavar{yourmail}{}         % Ihr Schreiben vom
+\setkomavar{myref}{}            % Unser Zeichen
+\setkomavar{customer}{}         % Kundennummer
+\setkomavar{invoice}{$invoicenr$}   % Rechnungsnummer
+\setkomavar{place}{}            % Ort
+\setkomavar{date}{$date$}       % Datum
+% =====================================
+
+\renewcommand*{\raggedsignature}{\raggedright}
+% ====================
+
+
+\begin{document}
+
+\begin{letter}{%
+    $for(to)$
+    $to$$sep$\\
+    $endfor$%
+  }
+
+$if(subject)$
+\setkomavar{subject}{$subject$}
+$endif$
+
+\opening{$opening$}
+
+$preinvoice$
+
+$if(service)$
+\begin{center}
+\begin{footnotesize}
+\newcounter{pos}
+\setcounter{pos}{0}
+\STautoround*{2} % Get spreadtab to always display the decimal part
+$if(commasep)$\STsetdecimalsep{,}$endif$ % Use comma as decimal separator
+\begin{spreadtab}{{tabular}[t t t]{lp{9.2cm}r}}
+  % \hdashline[1pt/1pt]
+  @ \noalign{\vskip 2mm} \textbf{Pos.} & @ \textbf{\desc} & @ \textbf{\prices} \\ \hline
+      $for(service)$ @ \noalign{\vskip 1mm} \refstepcounter{pos} \thepos
+        & @ $service.description$
+        $if(service.details)$\begin{itemize}
+          $for(service.details)$\scriptsize \item $service.details$ $endfor$ \end{itemize}
+        $endif$ & $service.price$\\$endfor$ \noalign{\vskip 1mm} \hline
+  $if(VAT)$
+    @ & @ \multicolumn{1}{r}{\subtotal}       & :={sum(c1:[0,-1])} \\ \hhline{~~-}
+    @ & @ \multicolumn{1}{r}{\VAT}            & $VAT$/100*[0,-1] \\ \hhline{~~-}
+  $endif$
+  @ & @ \multicolumn{1}{r}{\textbf{\total}}   & \textbf{:={$if(VAT)$[0,-1]+[0,-2]$else$sum(c1:[0,-1])$endif$}} \\ \hhline{~~-}
+\end{spreadtab}
+\end{footnotesize}
+\end{center}
+$endif$
+
+$postinvoice$
+
+$body$
+
+\closing{$closing$}
+
+% ===== Anlage(n) =====
+% \setkomavar*{enclseparator}{Anlage}
+
+$if(enclosure)$
+\encl{%
+  $for(enclosure)$
+  $enclosure$$sep$\\
+  $endfor$%
+}
+$endif$
+
+\end{letter}
+\end{document}

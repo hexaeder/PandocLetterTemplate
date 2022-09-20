@@ -1,11 +1,12 @@
 #!/bin/zsh
 
-if [ $# -eq 0 ]; then
-    echo "No arguments supplied, pass filename!"
-    exit
+if [ $# -eq 0 ]
+then
+    FILE="letter.md"
+else
+    FILE=$1
 fi
 
-FILE=$1
 OUTPUT="${FILE:r}.pdf"
 SCRIPTPATH=$0:h
 TEMPLATE="${SCRIPTPATH}/template.tex"

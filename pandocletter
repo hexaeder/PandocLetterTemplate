@@ -25,4 +25,4 @@ if ! [[ -f "$FILE" ]]; then
 fi
 
 echo "Run pandoc command..."
-pandoc $FILE -o $OUTPUT --template=$TEMPLATE
+pandoc $FILE -o $OUTPUT --template=$TEMPLATE -f markdown+escaped_line_breaks

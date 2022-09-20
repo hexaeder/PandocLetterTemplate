@@ -3,6 +3,7 @@
 lang: english # english or ngerman
 letteroption: DINmtext # DINmtext (more compact) or DIN, folding differs!
 date: '\today'
+fontsize: 11
 
 # From/To Information
 author: Max Sender
@@ -37,7 +38,7 @@ service:
   price: -10.00
 
 preinvoice: |
-  This text will be displaye befor the invoice.
+  This text will be displayed before the invoice.
 
 postinvoice: |
   This text will be displayed after the invoice.
